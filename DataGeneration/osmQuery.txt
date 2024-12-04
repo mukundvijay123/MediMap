@@ -1,0 +1,5 @@
+[out:json];
+area[name="Bengaluru"]->.searchArea;
+node["amenity"="hospital"](area.searchArea);
+out body;
+
