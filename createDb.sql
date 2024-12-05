@@ -29,21 +29,12 @@ CREATE TABLE RESOURCES(
 );
 
 
--- Create the PATIENT table
-CREATE TABLE PATIENT(
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(64) NOT NULL,
-    gender VARCHAR(16) NOT NULL,
-    contact VARCHAR(12),
-    hospital_id INT,
-    FOREIGN KEY (hospital_id) REFERENCES HOSPITAL(id)
-        ON DELETE SET NULL
-);
+
 
 -- Create the ACCIDENT table
 CREATE TABLE ACCIDENT(
     id SERIAL PRIMARY KEY,
-    patient_id INT,
+    patient_id INT NOT NULL,
     latitude DOUBLE PRECISION NOT NULL,
     longitude DOUBLE PRECISION NOT NULL,
     accident_details JSONB ,
@@ -54,12 +45,25 @@ CREATE TABLE ACCIDENT(
 -- Create the INSURANCE table
 CREATE TABLE INSURANCE(
     insurance_id SERIAL PRIMARY KEY,
-    provider_name VARCHAR(32),
+    provider_name VARCHAR(32) UNIQUE,
     cover INT NOT NULL,
-    patient_id INT,
-    FOREIGN KEY (patient_id) REFERENCES PATIENT(id)
+    
+);
+
+-- Create the PATIENT table
+CREATE TABLE PATIENT (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(64) NOT NULL,
+    gender VARCHAR(16) NOT NULL,
+    contact VARCHAR(12),
+    hospital_id INT,
+    FOREIGN KEY (hospital_id) REFERENCES HOSPITAL(id)
+        ON DELETE SET NULL,
+    insurance_id INT,
+    FOREIGN KEY (insurance_id) REFERENCES INSURANCE(id)
         ON DELETE CASCADE
 );
+
 
 
 \c postgres 
