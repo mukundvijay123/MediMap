@@ -44,7 +44,9 @@ CREATE TABLE PATIENT(
 CREATE TABLE ACCIDENT(
     id SERIAL PRIMARY KEY,
     patient_id INT,
-    location JSON NOT NULL,
+    latitude DOUBLE PRECISION NOT NULL,
+    longitude DOUBLE PRECISION NOT NULL,
+    accident_details JSONB ,
     FOREIGN KEY (patient_id) REFERENCES PATIENT(id)
         ON DELETE CASCADE
 );
@@ -52,6 +54,7 @@ CREATE TABLE ACCIDENT(
 -- Create the INSURANCE table
 CREATE TABLE INSURANCE(
     insurance_id SERIAL PRIMARY KEY,
+    provider_name VARCHAR(32),
     cover INT NOT NULL,
     patient_id INT,
     FOREIGN KEY (patient_id) REFERENCES PATIENT(id)
