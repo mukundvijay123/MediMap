@@ -11,8 +11,7 @@ CREATE TABLE HOSPITAL(
     pincode INT NOT NULL,
     latitude DOUBLE PRECISION NOT NULL,
     longitude  DOUBLE PRECISION NOT NULL,
-    contact VARCHAR(12),
-    is_available BOOLEAN NOT NULL
+    contact VARCHAR(12)
 );
 
 
@@ -21,9 +20,9 @@ CREATE TABLE RESOURCES(
     id SERIAL PRIMARY KEY,
     hospital_id INT ,
     dept VARCHAR(32) NOT NULL,
-    is_available BOOLEAN NOT NULL,
     resource_type VARCHAR(32),
     quantity INT,
+    occupied_quantity  INT,
     FOREIGN KEY (hospital_id) REFERENCES HOSPITAL(id)
         ON DELETE CASCADE
 );
