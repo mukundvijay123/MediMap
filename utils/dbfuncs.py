@@ -1,6 +1,6 @@
 import psycopg2
 
-
+# This has to be tested and matched to the db schema
 
 '''
 Function to add hospital
