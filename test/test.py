@@ -56,6 +56,16 @@ def main():
         utils.delete_hospital(conn, hospital_id)
         print(f"Deleted hospital with ID {hospital_id}")
 
+        accident_latitude = 12.890633 # Replace with actual accident latitude
+        accident_longitude = 77.594889 # Replace with actual accident longitude
+        distance = utils.haversine_distance(
+            hospital_data['latitude'],
+            hospital_data['longitude'],
+            accident_lat,
+            accident_lon
+        )
+        closest_hospital = utils.find_closest_hospital(conn, accident_latitude, accident_longitude)
+
     except Exception as e:
         print(f"Error: {e}")
     
