@@ -132,6 +132,91 @@ def delete_resource(conn, resource_id):
     
     finally:
         cursor.close()
+# Function to add a patient to the database
+def add_patient(conn, patient):
+    """
+    Adds a patient to the PATIENT table.
+    Parameters:
+        conn: Database connection object.
+        patient: Dictionary containing patient details.
+            Required keys: 'name', 'gender'.
+            Optional keys: 'contact', 'hospital_id', 'insurance_id'.
+    Returns:
+        int: ID of the newly added patient.
+    """
+    try:
+        cursor = conn.cursor()
+
+        # Insert query for the PATIENT table
+        query = """
+        INSERT INTO PATIENT (name, gender, contact, hospital_id, insurance_id)
+        VALUES (%s, %s, %s, %s, %s)
+        RETURNING id
+        """
+        
+        cursor.execute(query, (
+            patient['name'],
+            patient['gender'],
+            patient.get('contact', None),  # Default to None if not provided
+            patient.get('hospital_id', None),  # Default to None if not provided
+            patient.get('insurance_id', None)  # Default to None if not provided
+        ))
+
+        patient_id = cursor.fetchone()[0]  # Get the ID of the newly added patient
+        conn.commit()  # Commit transaction
+
+        print("Patient added successfully!")
+        return patient_id
+
+    except Exception as e:
+        conn.rollback()  # Rollback transaction on error
+        print(f"Error while adding patient: {e}")
+    
+    finally:
+        cursor.close()
+
+
+# Function to add accident details to the database
+def add_accident(conn, accident):
+    """
+    Adds accident details to the ACCIDENT table.
+    Parameters:
+        conn: Database connection object.
+        accident: Dictionary containing accident details.
+            Required keys: 'patient_id', 'latitude', 'longitude'.
+            Optional key: 'accident_details' (JSON object).
+    Returns:
+        int: ID of the newly added accident.
+    """
+    try:
+        cursor = conn.cursor()
+
+        # Insert query for the ACCIDENT table
+        query = """
+        INSERT INTO ACCIDENT (patient_id, latitude, longitude, accident_details)
+        VALUES (%s, %s, %s, %s)
+        RETURNING id
+        """
+        
+        cursor.execute(query, (
+            accident['patient_id'],
+            accident['latitude'],
+            accident['longitude'],
+            accident.get('accident_details', None)  # Default to None if not provided
+        ))
+
+        accident_id = cursor.fetchone()[0]  # Get the ID of the newly added accident
+        conn.commit()  # Commit transaction
+
+        print("Accident details added successfully!")
+        return accident_id
+
+    except Exception as e:
+        conn.rollback()  # Rollback transaction on error
+        print(f"Error while adding accident details: {e}")
+    
+    finally:
+        cursor.close()
 
 '''
 function to find shortest distance
