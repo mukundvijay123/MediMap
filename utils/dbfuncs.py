@@ -132,5 +132,60 @@ def delete_resource(conn, resource_id):
     finally:
         cursor.close()
 
+import psycopg2
+
+# Function to add patient details
+def add_patient(conn, patient):
+    try:
+        with conn.cursor() as cursor:
+            # Insert patient data into PATIENT table
+            query = """
+            INSERT INTO PATIENT (name, gender, contact, hospital_id, insurance_id)
+            VALUES (%s, %s, %s, %s, %s)
+            RETURNING id
+            """
+            cursor.execute(query, (
+                patient['name'],
+                patient['gender'],
+                patient['contact'],
+                patient['hospital_id'],
+                patient['insurance_id']
+            ))
+
+            patient_id = cursor.fetchone()[0]
+            conn.commit()
+            print("Patient added successfully!")
+            return patient_id
+
+    except Exception as e:
+        conn.rollback()
+        print(f"Error while adding patient: {e}")
+
+
+# Function to add accident details
+def add_accident(conn, accident):
+    try:
+        with conn.cursor() as cursor:
+            # Insert accident data into ACCIDENT table
+            query = """
+            INSERT INTO ACCIDENT (patient_id, latitude, longitude, accident_details)
+            VALUES (%s, %s, %s, %s)
+            RETURNING id
+            """
+            cursor.execute(query, (
+                accident['patient_id'],
+                accident['latitude'],
+                accident['longitude'],
+                accident['accident_details']
+            ))
+
+            accident_id = cursor.fetchone()[0]
+            conn.commit()
+            print("Accident details added successfully!")
+            return accident_id
+
+    except Exception as e:
+        conn.rollback()
+        print(f"Error while adding accident: {e}")
 
 
