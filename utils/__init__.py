@@ -1,1 +1,1 @@
-from .dbfuncs import add_hospital,add_resource,delete_hospital,delete_resource
+from .dbfuncs import add_hospital,add_resource,delete_hospital,delete_resource,find_closest_hospital
