@@ -1,4 +1,5 @@
 import psycopg2
+import math
 
 # add hospital ,add resource ,delete hospital and delete resource have been tested
 
@@ -132,5 +133,71 @@ def delete_resource(conn, resource_id):
     finally:
         cursor.close()
 
+'''
+function to find shortest distance
+'''
 
+def haversine_distance(lat1, lon1, lat2, lon2):
+    """
+    Calculate the great-circle distance between two points
+    on the Earth using the Haversine formula.
+    """
+    R = 6371  # Radius of Earth in kilometers
+    d_lat = math.radians(lat2 - lat1)
+    d_lon = math.radians(lon2 - lon1)
 
+    a = math.sin(d_lat / 2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(d_lon / 2)**2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    distance = R * c
+    return distance
+
+def find_closest_hospital(conn, accident_lat, accident_lon):
+    try:
+        cursor = conn.cursor()
+
+        # Fetch all hospital locations
+        query = """
+        SELECT id, hospital_name, latitude, longitude
+        FROM HOSPITAL
+        """
+        cursor.execute(query)
+        hospitals = cursor.fetchall()
+
+        closest_hospital = None
+        min_distance = float('inf')
+
+        # Iterate over hospitals and calculate the distance
+        for hospital in hospitals:
+            hospital_id, hospital_name, hospital_lat, hospital_lon = hospital
+
+            # Convert Decimal to float
+            hospital_lat = float(hospital_lat)
+            hospital_lon = float(hospital_lon)
+
+            # Calculate haversine distance
+            distance = haversine_distance(accident_lat, accident_lon, hospital_lat, hospital_lon)
+
+            if distance < min_distance:
+                min_distance = distance
+                closest_hospital = {
+                    'id': hospital_id,
+                    'name': hospital_name,
+                    'latitude': hospital_lat,
+                    'longitude': hospital_lon,
+                    'distance': min_distance
+                }
+
+        if closest_hospital:
+            print(f"Closest hospital: {closest_hospital['name']} (ID: {closest_hospital['id']})")
+            print(f"Location: ({closest_hospital['latitude']}, {closest_hospital['longitude']})")
+            print(f"Distance: {closest_hospital['distance']:.2f} km")
+        else:
+            print("No hospitals found.")
+
+        return closest_hospital
+
+    except Exception as e:
+        print(f"Error: {e}")
+
+    finally:
+        cursor.close()
