@@ -28,26 +28,11 @@ CREATE TABLE RESOURCES(
         ON DELETE CASCADE
 );
 
-
-
-
--- Create the ACCIDENT table
-CREATE TABLE ACCIDENT(
-    id SERIAL PRIMARY KEY,
-    patient_id INT NOT NULL,
-    latitude DOUBLE PRECISION NOT NULL,
-    longitude DOUBLE PRECISION NOT NULL,
-    accident_details JSONB ,
-    FOREIGN KEY (patient_id) REFERENCES PATIENT(id)
-        ON DELETE CASCADE
-);
-
 -- Create the INSURANCE table
 CREATE TABLE INSURANCE(
-    insurance_id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     provider_name VARCHAR(32) UNIQUE,
-    cover INT NOT NULL,
-    
+    cover INT NOT NULL
 );
 
 -- Create the PATIENT table
@@ -63,6 +48,21 @@ CREATE TABLE PATIENT (
     FOREIGN KEY (insurance_id) REFERENCES INSURANCE(id)
         ON DELETE CASCADE
 );
+
+
+
+-- Create the ACCIDENT table
+CREATE TABLE ACCIDENT(
+    id SERIAL PRIMARY KEY,
+    patient_id INT NOT NULL,
+    latitude DOUBLE PRECISION NOT NULL,
+    longitude DOUBLE PRECISION NOT NULL,
+    accident_details JSONB ,
+    FOREIGN KEY (patient_id) REFERENCES PATIENT(id)
+        ON DELETE CASCADE
+);
+
+
 
 
 
