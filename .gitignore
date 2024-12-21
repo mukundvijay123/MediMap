@@ -24,3 +24,7 @@ env/
 
 # SQLite database files (if you are using SQLite)
 *.sqlite3
+
+
+#test
+test
