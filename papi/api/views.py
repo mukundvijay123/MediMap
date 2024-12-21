@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .models import Hospital
 from .serializers import HospitalSerializer,ResourceSerializer,InsuranceSerializer,PatientSerializer
-from api_utils import haversine_distance
+from .api_utils import haversine_distance
 
 
 
@@ -101,11 +101,11 @@ def get_closest_hospital(request):
         # Fetch all hospital locations
         query = """
         SELECT id, hospital_name, latitude, longitude
-        FROM HOSPITAL
+        FROM API_HOSPITAL
         """
         cursor.execute(query)
         hospitals = cursor.fetchall()
-
+        print(hospitals)
         closest_hospital = None
         min_distance = float('inf')
 
