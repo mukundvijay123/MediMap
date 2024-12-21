@@ -1,9 +1,11 @@
 from django.shortcuts import render
+from django.db import connection
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .models import Hospital
 from .serializers import HospitalSerializer,ResourceSerializer,InsuranceSerializer,PatientSerializer
+from api_utils import haversine_distance
 
 
 
@@ -78,3 +80,69 @@ def add_patient(request):
 
         # If the data is not valid, return the errors
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+
+
+@api_view(['GET'])
+def get_closest_hospital(request):
+    # Extract latitude and longitude from query parameters
+    try:
+        accident_lat = float(request.GET.get('latitude'))
+        accident_lon = float(request.GET.get('longitude'))
+    except (TypeError, ValueError):
+        return Response({"error": "Invalid latitude or longitude"}, status=400)
+
+    try:
+        # Connect to the database
+        cursor = connection.cursor()
+
+        # Fetch all hospital locations
+        query = """
+        SELECT id, hospital_name, latitude, longitude
+        FROM HOSPITAL
+        """
+        cursor.execute(query)
+        hospitals = cursor.fetchall()
+
+        closest_hospital = None
+        min_distance = float('inf')
+
+        # Iterate over hospitals and calculate the distance
+        for hospital in hospitals:
+            hospital_id, hospital_name, hospital_lat, hospital_lon = hospital
+
+            # Convert Decimal to float
+            hospital_lat = float(hospital_lat)
+            hospital_lon = float(hospital_lon)
+
+            # Calculate haversine distance
+            distance = haversine_distance(accident_lat, accident_lon, hospital_lat, hospital_lon)
+
+            if distance < min_distance:
+                min_distance = distance
+                closest_hospital = {
+                    'id': hospital_id,
+                    'name': hospital_name,
+                    'latitude': hospital_lat,
+                    'longitude': hospital_lon,
+                    'distance': min_distance
+                }
+
+        if closest_hospital:
+            return Response({
+                'id': closest_hospital['id'],
+                'name': closest_hospital['name'],
+                'latitude': closest_hospital['latitude'],
+                'longitude': closest_hospital['longitude'],
+                'distance': f"{closest_hospital['distance']:.2f} km"
+            })
+
+        return Response({"error": "No hospitals found."}, status=404)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+    finally:
+        cursor.close()
