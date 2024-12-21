@@ -2,7 +2,7 @@ from django.db import models
 
 # Create your models here.
 class Hospital(models.Model):
-    hospital_name = models.CharField(max_length=32)
+    hospital_name = models.CharField(max_length=64)
     addr = models.CharField(max_length=128)
     city = models.CharField(max_length=32)
     state_name = models.CharField(max_length=32)
