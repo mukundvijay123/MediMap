@@ -105,7 +105,7 @@ def get_closest_hospital(request):
         """
         cursor.execute(query)
         hospitals = cursor.fetchall()
-        print(hospitals)
+        #print(hospitals)
         closest_hospital = None
         min_distance = float('inf')
 
