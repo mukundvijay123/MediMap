@@ -36,6 +36,7 @@ csv_file_path = 'DataGeneration/enriched_hospitals_data.csv'  # Update with the 
 
 
 
+
 # Close the database connection
 cursor.close()
 conn.close()
