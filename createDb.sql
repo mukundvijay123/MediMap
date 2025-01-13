@@ -54,7 +54,6 @@ CREATE TABLE PATIENT (
     gender VARCHAR(16),
     bloodgroup VARCHAR(2),
     contact VARCHAR(12),
-    info JSONB,
     FOREIGN KEY (hid) REFERENCES hospital(id) ON DELETE CASCADE,
     FOREIGN KEY (insurance_id) REFERENCES INSURANCE(id) ON DELETE SET NULL,
     FOREIGN KEY (accident_id) REFERENCES ACCIDENT(id)
@@ -66,7 +65,7 @@ CREATE TABLE ALLOCATED(
     patient_id INT,
     quatity_allocated INT,
     FOREIGN KEY(rid) REFERENCES RESOURCES(id) ,
-    FOREIGN KEY(patient_id) REFERENCES RESOURCES(id) 
+    FOREIGN KEY(patient_id) REFERENCES PATIENT(id) 
 )
 
 
