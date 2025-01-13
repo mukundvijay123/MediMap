@@ -49,16 +49,16 @@ CREATE TABLE PATIENT (
     id SERIAL PRIMARY KEY,
     hid INT,
     insurance_id INT,
-    pname VARCHAR(64) ,
+    accident_id INT,
+    pname VARCHAR(64),
     gender VARCHAR(16),
     bloodgroup VARCHAR(2),
     contact VARCHAR(12),
     info JSONB,
-    FOREIGN KEY (hid) REFERENCES hospital(id)
-    ON DELETE CASCADE,
-    FOREIGN KEY (patient_id) REFERENCES INSURANCE(id)
-    ON DELETE SET NULL
-
+    FOREIGN KEY (hid) REFERENCES hospital(id) ON DELETE CASCADE,
+    FOREIGN KEY (insurance_id) REFERENCES INSURANCE(id) ON DELETE SET NULL,
+    FOREIGN KEY (accident_id) REFERENCES ACCIDENT(id)
+    ON DELETE CASCADE
 );
 
 CREATE TABLE ALLOCATED(
@@ -74,12 +74,9 @@ CREATE TABLE ALLOCATED(
 -- Create the ACCIDENT table
 CREATE TABLE ACCIDENT(
     id SERIAL PRIMARY KEY,
-    patient_id INT NOT NULL,
     latitude DOUBLE PRECISION NOT NULL,
     longitude DOUBLE PRECISION NOT NULL,
-    accident_details JSONB ,
-    FOREIGN KEY (patient_id) REFERENCES PATIENT(id)
-    ON DELETE CASCADE
+    accident_details JSONB 
 );
 
 
