@@ -52,10 +52,10 @@ class Patient(models.Model):
     hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, related_name='patients',null=True)
     insurance = models.ForeignKey(Insurance, on_delete=models.SET_NULL, null=True, blank=True, related_name='patients')
     accident = models.ForeignKey(Accident, on_delete=models.CASCADE, related_name='patients')
-    patient_name = models.CharField(max_length=64)
+    patient_name = models.CharField(max_length=64,null=True)
     gender = models.CharField(max_length=16, null=True, blank=True)
-    blood_group = models.CharField(max_length=8)
-    contact = models.CharField(max_length=16)
+    blood_group = models.CharField(max_length=8,null=True)
+    contact = models.CharField(max_length=16,null=True)
 
     def __str__(self):
         return f"{self.patient_name} - {self.hospital.hospital_name}"
