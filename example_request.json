@@ -1,0 +1,31 @@
+{
+    "url":"http://127.0.0.1:8000/api/getHospital",
+
+    "request":{
+        "accident_latitude": 12.9517481,
+        "accident_longitude": 77.493,
+        "accident_details": {
+            "description": "Car accident with injuries",
+            "severity": "High",
+            "location": "Bengaluru, Karnataka"
+        }
+    },
+    
+    "response":{
+        "message": "Patient and Accident created successfully",
+        "patient_id": 3,
+        "accident_id": 35,
+        "hospital": {
+            "id": 159,
+            "name": "Vijayanagar Hospital",
+            "lat": 12.96767,
+            "long": 77.5226459,
+            "address": "No. 46, 17th Cross, Mc Road, Viajayanagar",
+            "city": "Bengaluru",
+            "state": "Karnataka",
+            "pincode": 560040,
+            "contact": null
+        },
+        "department": "Traumatology"
+    }
+}
