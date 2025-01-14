@@ -5,7 +5,7 @@ from django.db import models
 
 class Hospital(models.Model):
     id = models.AutoField(primary_key=True) 
-    hospital_name = models.CharField(max_length=32)
+    hospital_name = models.CharField(max_length=64)
     latitude = models.FloatField()
     longitude = models.FloatField()
     addr = models.CharField(max_length=128)
@@ -38,8 +38,9 @@ class Insurance(models.Model):
 
 class Accident(models.Model):
     id = models.AutoField(primary_key=True)
-    latitude = models.FloatField()
-    longitude = models.FloatField()
+    date=models.DateTimeField(auto_now_add=True)
+    accident_latitude = models.FloatField()
+    accident_longitude = models.FloatField()
     accident_details = models.JSONField()
 
     def __str__(self):
@@ -48,7 +49,7 @@ class Accident(models.Model):
 
 class Patient(models.Model):
     id = models.AutoField(primary_key=True)
-    hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, related_name='patients')
+    hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, related_name='patients',null=True)
     insurance = models.ForeignKey(Insurance, on_delete=models.SET_NULL, null=True, blank=True, related_name='patients')
     accident = models.ForeignKey(Accident, on_delete=models.CASCADE, related_name='patients')
     patient_name = models.CharField(max_length=64)
