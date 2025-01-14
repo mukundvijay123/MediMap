@@ -1,9 +1,9 @@
-#SVM
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.svm import SVC
 from sklearn.metrics import classification_report, accuracy_score
+import pickle
 
 # Load the dataset
 data = pd.read_csv("synthetic_accident_reports.csv")
@@ -42,3 +42,25 @@ def predict_department(report):
 new_report = "Patient reports high creatinine levels"
 predicted_department, confidence = predict_department(new_report)
 print(f"The predicted department for the report is: {predicted_department} (Confidence: {confidence:.2f})")
+
+# Save the model and vectorizer to pickle files
+with open("svm_classifier.pkl", "wb") as f:
+    pickle.dump(svm_classifier, f)
+    
+with open("tfidf_vectorizer.pkl", "wb") as f:
+    pickle.dump(tfidf_vectorizer, f)
+
+print("Model and vectorizer saved to pickle files.")
+
+# To load the model and vectorizer back
+# with open("svm_classifier.pkl", "rb") as f:
+#     loaded_svm_classifier = pickle.load(f)
+
+# with open("tfidf_vectorizer.pkl", "rb") as f:
+#     loaded_tfidf_vectorizer = pickle.load(f)
+
+# Example of loading and using the saved model for prediction
+# new_report = "Patient has a severe headache and nausea"
+# new_report_tfidf = loaded_tfidf_vectorizer.transform([new_report])
+# prediction = loaded_svm_classifier.predict(new_report_tfidf)
+# print(f"Predicted Department: {prediction[0]}")

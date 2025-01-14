@@ -1,148 +1,73 @@
-from django.shortcuts import render
-from django.db import connection
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
-from .models import Hospital
-from .serializers import HospitalSerializer,ResourceSerializer,InsuranceSerializer,PatientSerializer
-from .api_utils import haversine_distance
-
+from rest_framework.views import APIView
+from .models import Accident
+from .serializers import AccidentSerializer
+from django.db import connection
+from .apiUtils import closestHospital,predict_department
 
 
 # Create your views here.
-def home(request):
-    return render(request,'home.html',{})
+from django.db import transaction
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Accident, Patient,Hospital
+from .serializers import AccidentSerializer
+from .apiUtils import predict_department, closestHospital 
 
 
-@api_view(['POST'])
-def add_hospital(request):
-    if request.method == 'POST':
-        # Create a HospitalSerializer instance with the request data
-        serializer = HospitalSerializer(data=request.data)
+class getBestHospital(APIView):
+    def get(self, request):
+        serializer = AccidentSerializer(data=request.data)
 
-        # Check if the data is valid
         if serializer.is_valid():
-            # Save the new hospital to the database
-            serializer.save()
-            # Return a success response with the serialized data
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        # Return errors if the data is not valid
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+            try:
+                # Start the transaction
+                with transaction.atomic():
+                    # Save the validated Accident data into the database
+                    accident = serializer.save()
 
-@api_view(['POST'])
-def add_resource(request):
-    if request.method == 'POST':
-        # Create a ResourceSerializer instance with the request data
-        serializer = ResourceSerializer(data=request.data)
+                    # Extract the accident details from the request
+                    accident_description = request.data.get("accident_details", {}).get("description", "")
+                    lon = request.data.get("accident_longitude")
+                    lat = request.data.get("accident_latitude")
 
-        # Check if the data is valid
-        if serializer.is_valid():
-            # Save the new resource to the database
-            serializer.save()
-            # Return a success response with the serialized data
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        # Return errors if the data is not valid
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+                    # Predict the department based on the accident details
+                    predictedDept = predict_department(accident_description)
 
-@api_view(['POST'])
-def add_insurance(request):
-    if request.method == 'POST':
-        # Create an instance of the InsuranceSerializer with the data from the request
-        serializer = InsuranceSerializer(data=request.data)
+                    # Finding the closest hospital based on latitude and longitude
+                    bestHospital = closestHospital(connection, lat, lon)
+                    hospital_id = bestHospital["id"]
+                    # Fetch the Hospital instance using hospital_id
+                    hospital_instance = Hospital.objects.get(id=hospital_id)
 
-        # Check if the data is valid
-        if serializer.is_valid():
-            # Save the insurance record to the database
-            serializer.save()
-            # Return a success response with the serialized data
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+                    # Create the Patient record
+                    patient_data = {
+                        'hospital': hospital_instance,  # Pass the Hospital instance instead of hospital_id
+                        'accident': accident,  # Link to the created Accident
+                        'patient_name': request.data.get('patient_name'),
+                        'gender': request.data.get('gender'),
+                        'blood_group': request.data.get('blood_group'),
+                        'contact': request.data.get('contact'),
+                    }
 
-        # If the data is not valid, return the errors
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+                    # Create the Patient object and save it to the database
+                    patient = Patient.objects.create(**patient_data)
 
-@api_view(['POST'])
-def add_patient(request):
-    if request.method == 'POST':
-        # Create a PatientSerializer instance with the data from the request
-        serializer = PatientSerializer(data=request.data)
+                    # Return a response indicating the patient and accident were successfully created
+                    return Response({
+                        'message': 'Patient and Accident created successfully',
+                        'patient_id': patient.id,
+                        'accident_id': accident.id,
+                        'hospital': bestHospital,  
+                        'department': predictedDept[0],
+                    }, status=status.HTTP_201_CREATED)
 
-        # Check if the data is valid
-        if serializer.is_valid():
-            # Save the patient and related accident to the database
-            serializer.save()
-            # Return a success response with the serialized data
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                # If an error occurs, the transaction will be rolled back
+                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        # If the data is not valid, return the errors
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-
-
-
-
-@api_view(['GET'])
-def get_closest_hospital(request):
-    # Extract latitude and longitude from query parameters
-    try:
-        accident_lat = float(request.GET.get('latitude'))
-        accident_lon = float(request.GET.get('longitude'))
-    except (TypeError, ValueError):
-        return Response({"error": "Invalid latitude or longitude"}, status=400)
-
-    try:
-        # Connect to the database
-        cursor = connection.cursor()
-
-        # Fetch all hospital locations
-        query = """
-        SELECT id, hospital_name, latitude, longitude
-        FROM API_HOSPITAL
-        """
-        cursor.execute(query)
-        hospitals = cursor.fetchall()
-        #print(hospitals)
-        closest_hospital = None
-        min_distance = float('inf')
-
-        # Iterate over hospitals and calculate the distance
-        for hospital in hospitals:
-            hospital_id, hospital_name, hospital_lat, hospital_lon = hospital
-
-            # Convert Decimal to float
-            hospital_lat = float(hospital_lat)
-            hospital_lon = float(hospital_lon)
-
-            # Calculate haversine distance
-            distance = haversine_distance(accident_lat, accident_lon, hospital_lat, hospital_lon)
-
-            if distance < min_distance:
-                min_distance = distance
-                closest_hospital = {
-                    'id': hospital_id,
-                    'name': hospital_name,
-                    'latitude': hospital_lat,
-                    'longitude': hospital_lon,
-                    'distance': min_distance
-                }
-
-        if closest_hospital:
-            return Response({
-                'id': closest_hospital['id'],
-                'name': closest_hospital['name'],
-                'latitude': closest_hospital['latitude'],
-                'longitude': closest_hospital['longitude'],
-                'distance': f"{closest_hospital['distance']:.2f} km"
-            })
-
-        return Response({"error": "No hospitals found."}, status=404)
-
-    except Exception as e:
-        return Response({"error": str(e)}, status=500)
-
-    finally:
-        cursor.close()
+        else:
+            # If the Accident serializer is not valid, return errors
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

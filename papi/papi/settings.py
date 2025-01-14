@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-y*e2i#602m#y3e2n9x6-yhuldlc10rgt)+lu19h_cz38pw*-6p'
+SECRET_KEY = 'django-insecure-o5z-@s*l&hjk%f5_$b0n9^dy3p(z!q!-2)y^@v8t2-q7bce*9o'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -37,8 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'api',
-    'rest_framework'
+    'rest_framework',
+    'api'
 ]
 
 MIDDLEWARE = [
@@ -71,18 +71,24 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'papi.wsgi.application'
 
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    ),
+}
 
-# Databasey
+
+# Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',  # Correct backend for PostgreSQL
-        'NAME': 'medimap',              # Replace with your PostgreSQL database name
-        'USER': 'postgres',              # Replace with your PostgreSQL username
-        'PASSWORD': '123456789',      # Replace with your PostgreSQL password
-        'HOST': 'localhost',                       # Or the IP address of your PostgreSQL server
-        'PORT': '5432',                            # Default PostgreSQL port
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'medimap',
+        'USER': 'postgres',
+        'PASSWORD': '123456789',
+        'HOST': 'localhost',  # Or the IP address of your PostgreSQL server
+        'PORT': '5432',
     }
 }
 
