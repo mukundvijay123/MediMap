@@ -54,18 +54,18 @@ def closestHospital(connection,accident_latitude,accident_longitude):
             # Calculate haversine distance
             distance = haversine_distance(accident_latitude, accident_longitude, hospital_lat, hospital_lon)
             if distance<min_distance:
+                min_distance=distance
                 closest_hospital=hospital
-        
         return {
-            'id':hospital[0],
-            'name':hospital[1],
-            'lat':hospital[2],
-            'long':hospital[3],
-            'address':hospital[4],
-            'city':hospital[5],
-            'state':hospital[6],
-            'pincode':hospital[7],
-            'contact':hospital[8]
+            'id':closest_hospital[0],
+            'name':closest_hospital[1],
+            'lat':closest_hospital[2],
+            'long':closest_hospital[3],
+            'address':closest_hospital[4],
+            'city':closest_hospital[5],
+            'state':closest_hospital[6],
+            'pincode':closest_hospital[7],
+            'contact':closest_hospital[8]
         }
 
             

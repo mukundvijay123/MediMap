@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accident and Patient Information</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 700px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+        }
+
+        .info {
+            margin: 15px 0;
+        }
+
+        .info strong {
+            font-weight: bold;
+        }
+
+        .details {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .hospital-info {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .error-message {
+            color: red;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        #location {
+            color: #555;
+            text-align: center;
+            font-size: 1.1em;
+            margin-top: 20px;
+        }
+
+        .textarea-container {
+            margin-top: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            resize: vertical;
+        }
+
+        .submit-button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+        .submit-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Accident and Patient Details</h1>
+        
+        <div class="info">
+            <strong>Message:</strong> <span id="message">Loading...</span>
+        </div>
+        
+        <div class="info">
+            <strong>Patient ID:</strong> <span id="patient-id">Loading...</span>
+        </div>
+        
+        <div class="info">
+            <strong>Accident ID:</strong> <span id="accident-id">Loading...</span>
+        </div>
+        
+        <div class="hospital-info">
+            <strong>Hospital Information:</strong>
+            <div>
+                <strong>Name:</strong> <span id="hospital-name">Loading...</span><br>
+                <strong>Address:</strong> <span id="hospital-address">Loading...</span><br>
+                <strong>City:</strong> <span id="hospital-city">Loading...</span><br>
+                <strong>State:</strong> <span id="hospital-state">Loading...</span><br>
+                <strong>Pincode:</strong> <span id="hospital-pincode">Loading...</span>
+            </div>
+        </div>
+
+        <div class="details">
+            <strong>Accident Description:</strong>
+            <div class="textarea-container">
+                <textarea id="accident-description" placeholder="Enter accident description here..."></textarea>
+            </div>
+            <strong>Department:</strong> <span id="department">Loading...</span>
+        </div>
+
+        <button class="submit-button" onclick="submitAccidentData()">Submit Accident Information</button>
+
+        <div id="location"></div>
+
+        <div class="error-message" id="error-message"></div>
+    </div>
+
+    <script>
+        // Sample request body to send in POST request
+        const requestData = {
+            accident_latitude: 0.00,
+            accident_longitude: 0.00,
+            accident_details: {
+                description: "", // Initial empty description
+            }
+        };
+
+        // Function to make the POST request
+        function makeRequest() {
+            fetch('http://127.0.0.1:8000/api/getHospital', {
+                method: 'POST', // Use POST method
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestData) // Convert the request data to JSON
+            })
+            .then(response => response.json()) // Parse the JSON response
+            .then(data => {
+                // Handle successful response here
+                console.log(data)
+                document.getElementById('message').textContent = data.message;
+                document.getElementById('patient-id').textContent = data.patient_id;
+                document.getElementById('accident-id').textContent = data.accident_id;
+                document.getElementById('hospital-name').textContent = data.hospital.name;
+                document.getElementById('hospital-address').textContent = data.hospital.address;
+                document.getElementById('hospital-city').textContent = data.hospital.city;
+                document.getElementById('hospital-state').textContent = data.hospital.state;
+                document.getElementById('hospital-pincode').textContent = data.hospital.pincode;
+                document.getElementById('department').textContent = data.department;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('error-message').textContent = "An error occurred while fetching data.";
+            });
+        }
+
+        // Function to handle form submission
+        function submitAccidentData() {
+            const description = document.getElementById('accident-description').value;
+            requestData.accident_details.description = description;
+
+            // Call the API with updated description
+            makeRequest();
+        }
+
+        
+
+        // Function to fetch geolocation
+        function showLocation(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            document.getElementById('location').textContent = `Your current location: Latitude: ${latitude}, Longitude: ${longitude}`;
+        }
+
+        function showError(error) {
+            const errorMessage = document.getElementById('error-message');
+            if (error.code === 1) {
+                errorMessage.textContent = "Location access denied.";
+            } else if (error.code === 2) {
+                errorMessage.textContent = "Unable to determine your location.";
+            } else if (error.code === 3) {
+                errorMessage.textContent = "Location request timed out.";
+            }
+        }
+
+        // Check if geolocation is available and request it
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showLocation, showError);
+        } else {
+            document.getElementById('location').textContent = "Geolocation is not supported by this browser.";
+        }
+    </script>
+
+</body>
+</html>

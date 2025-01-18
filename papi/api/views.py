@@ -1,4 +1,5 @@
 from rest_framework import status
+from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Accident
@@ -17,8 +18,13 @@ from .serializers import AccidentSerializer
 from .apiUtils import predict_department, closestHospital 
 
 
-class getBestHospital(APIView):
+class Register(APIView):
     def get(self, request):
+        # Rendering the index.html template on GET request
+        return render(request, r'C:\Users\mukun\data\MediMap\papi\api\templates\index.html')
+
+class getBestHospital(APIView):
+    def post(self, request):
         serializer = AccidentSerializer(data=request.data)
 
         if serializer.is_valid():

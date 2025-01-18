@@ -64,7 +64,7 @@ class Patient(models.Model):
 class ConsistsOf(models.Model):
     hospital = models.ForeignKey('Hospital', on_delete=models.CASCADE)
     resource = models.ForeignKey('Resource', on_delete=models.CASCADE)
-    available = models.BooleanField(default=False)
+    available = models.BooleanField(default=True)
     total_quantity = models.IntegerField(default=0)
     total_available_quantity = models.IntegerField(default=0)
 
