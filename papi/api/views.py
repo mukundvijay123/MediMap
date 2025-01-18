@@ -1,27 +1,29 @@
-from rest_framework import status
-from django.shortcuts import render
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from .models import Accident
-from .serializers import AccidentSerializer
-from django.db import connection
-from .apiUtils import closestHospital,predict_department
-
-
-# Create your views here.
 from django.db import transaction
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Accident, Patient,Hospital
-from .serializers import AccidentSerializer
+from .serializers import AccidentSerializer,PatientSerializer  
+from django.db import connection
 from .apiUtils import predict_department, closestHospital 
+from django.shortcuts import render, get_object_or_404
+
 
 
 class Register(APIView):
     def get(self, request):
         # Rendering the index.html template on GET request
-        return render(request, r'C:\Users\mukun\data\MediMap\papi\api\templates\index.html')
+        return render(request, 'index.html')
+    
+
+
+class RegisterPatient(APIView):
+    def get(self, request, patient_id):
+        # Get patient details using the patient_id from the URL
+        patient = get_object_or_404(Patient, id=patient_id)
+
+        # Render the registration template with the patient details
+        return render(request, 'registration.html', {'patient': patient})
 
 class getBestHospital(APIView):
     def post(self, request):
@@ -41,9 +43,8 @@ class getBestHospital(APIView):
 
                     # Predict the department based on the accident details
                     predictedDept = predict_department(accident_description)
-
                     # Finding the closest hospital based on latitude and longitude
-                    bestHospital = closestHospital(connection, lat, lon)
+                    bestHospital = closestHospital(connection, lat, lon,predictedDept[0])
                     hospital_id = bestHospital["id"]
                     # Fetch the Hospital instance using hospital_id
                     hospital_instance = Hospital.objects.get(id=hospital_id)
@@ -76,4 +77,35 @@ class getBestHospital(APIView):
 
         else:
             # If the Accident serializer is not valid, return errors
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+
+
+class CompletePatientRegistrationView(APIView):
+    def patch(self, request, pk, format=None):
+        try:
+            patient = Patient.objects.get(pk=pk)
+        except Patient.DoesNotExist:
+            return Response({"detail": "Patient not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Deserialize and validate the data
+        serializer = PatientSerializer(patient, data=request.data, partial=True)  # partial=True allows updating only provided fields
+        if serializer.is_valid():
+            # Optionally assign hospital and accident from session or request context
+            hospital_id = request.session.get('hospital_id')  # Or some other way to fetch hospital
+            accident_id = request.session.get('accident_id')  # Or some other way to fetch accident
+
+            if hospital_id and accident_id:
+                try:
+                    hospital = Hospital.objects.get(id=hospital_id)
+                    accident = Accident.objects.get(id=accident_id)
+                    patient.hospital = hospital
+                    patient.accident = accident
+                except (Hospital.DoesNotExist, Accident.DoesNotExist):
+                    return Response({"detail": "Hospital or Accident not found."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Save the updated patient instance
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

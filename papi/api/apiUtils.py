@@ -30,18 +30,17 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     distance = R * c
     return distance
 
-def closestHospital(connection,accident_latitude,accident_longitude):
+def closestHospital(connection,accident_latitude,accident_longitude,dept):
     try:
         cursor=connection.cursor()
-
         query="""
-        SELECT * 
-        FROM API_HOSPITAL 
+        SELECT h.id,h.hospital_name,h.latitude,h.longitude,h.addr,h.city,h.state_name,h.pincode,h.contact
+        FROM API_HOSPITAL AS h,API_CONSISTSOF  AS c,API_RESOURCE AS r
+        WHERE h.id=c.hospital_id AND c.resource_id=r.id AND c.available AND r.dept = %s
         """
 
-        cursor.execute(query)
+        cursor.execute(query,(dept,))
         hospitals = cursor.fetchall()
-
         closest_hospital = None
         min_distance = float('inf')
 

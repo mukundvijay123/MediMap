@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Patient Information</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 700px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+        }
+
+        .info {
+            margin: 15px 0;
+        }
+
+        .info strong {
+            font-weight: bold;
+        }
+
+        .details {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .error-message {
+            color: red;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        #location {
+            color: #555;
+            text-align: center;
+            font-size: 1.1em;
+            margin-top: 20px;
+        }
+
+        .textarea-container {
+            margin-top: 10px;
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+
+        .submit-button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+        .submit-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Update Patient Information</h1>
+
+        <div class="info">
+            <strong>Patient ID:</strong> <span id="patient-id">{{ patient.id }}</span>
+        </div>
+
+        <div class="details">
+            <strong>Update Information:</strong>
+            <div class="textarea-container">
+
+                <label for="name">Patient Name:</label>
+                <input type="text" id="patient-name" value="{{ patient.patient_name }}" placeholder="Enter name">
+
+                <label for="gender">Gender:</label>
+                <input type="text" id="gender" value="{{ patient.gender }}" placeholder="Enter gender (optional)">
+
+                <label for="blood-group">Blood Group:</label>
+                <input type="text" id="blood-group" value="{{ patient.blood_group }}" placeholder="Enter blood group (optional)">
+
+                <label for="contact">Contact:</label>
+                <input type="text" id="contact" value="{{ patient.contact }}" placeholder="Enter contact number (optional)">
+
+                <label for="insurance">Insurance ID:</label>
+                <input type="text" id="insurance" 
+                       value="{% if patient.insurance %}{{ patient.insurance.id }}{% else %}{{ '' }}{% endif %}" 
+                       placeholder="Enter insurance ID (optional)">
+            </div>
+        </div>
+
+        <button class="submit-button" onclick="submitPatientUpdate()">Update Patient Information</button>
+
+        <div class="error-message" id="error-message"></div>
+    </div>
+
+    <script>
+        let patientId = "{{patient.id }}"; // Dynamic patient ID
+
+        // Function to make the PATCH request
+        function makeRequest() {
+            const patientData = {
+                patient_name: document.getElementById('patient-name').value,
+                gender: document.getElementById('gender').value,
+                blood_group: document.getElementById('blood-group').value,
+                contact: document.getElementById('contact').value,
+                insurance: document.getElementById('insurance').value ? parseInt(document.getElementById('insurance').value) : null
+            };
+
+            fetch(`http://127.0.0.1:8000/api/api/patient/${patientId}/complete_registration/`, {
+                method: 'PATCH', // Use PATCH method
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(patientData) // Convert the request data to JSON
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Handle successful response here
+                console.log(data);
+                document.getElementById('patient-id').textContent = data.id;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('error-message').textContent = "An error occurred while updating the patient details.";
+            });
+        }
+
+        // Function to handle form submission
+        function submitPatientUpdate() {
+            makeRequest();
+        }
+    </script>
+
+</body>
+</html>
