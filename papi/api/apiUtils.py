@@ -107,3 +107,36 @@ def predict_department(report):
     confidence = probabilities.max()  # Highest probability (confidence)
     
     return prediction[0], confidence
+
+
+def get_registered(hospital_id,connection):
+    try:
+        cursor=connection.cursor()
+        REGISTERED_QUERY="""
+            SELECT p.id,a.id,p.patient_name,p.gender,p.contact
+            FROM api_patient AS p,api_hospital AS h ,api_accident as a
+            WHERE p.hospital_id=h.id  AND h.id = %s AND p.accident_id=a.id AND p.patient_name IS NOT NULL
+        """
+
+        cursor.execute(REGISTERED_QUERY,(hospital_id,))
+        registered_patients=cursor.fetchall()
+        return registered_patients
+    except:
+        print("An error occured")
+
+
+def get_unregistered(hospital_id,connection):
+    try:
+        cursor=connection.cursor()
+        UNREGISTERED_QUERY="""
+            SELECT p.id,a.id,p.patient_name,p.gender,p.contact
+            FROM api_patient AS p,api_hospital AS h ,api_accident as a
+            WHERE p.hospital_id=h.id  AND h.id = %s AND p.accident_id=a.id AND p.patient_name IS  NULL
+        """
+
+        cursor.execute(UNREGISTERED_QUERY,(hospital_id,))
+        unregistered_patients=cursor.fetchall()
+        return unregistered_patients
+    except:
+        print("An error occured")
+
