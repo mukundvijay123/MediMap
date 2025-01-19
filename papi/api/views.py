@@ -24,6 +24,10 @@ class RegisterPatient(APIView):
 
         # Render the registration template with the patient details
         return render(request, 'registration.html', {'patient': patient})
+    
+class DashboardLogin(APIView):
+    def get(self,request):
+        return render(request,'hospital.html')
 
 class getBestHospital(APIView):
     def post(self, request):
