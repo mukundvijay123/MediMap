@@ -5,7 +5,7 @@ from rest_framework import status
 from .models import Accident, Patient,Hospital
 from .serializers import AccidentSerializer,PatientSerializer  
 from django.db import connection
-from .apiUtils import predict_department, closestHospital 
+from .apiUtils import predict_department, closestHospital ,get_registered,get_unregistered
 from django.shortcuts import render, get_object_or_404
 
 
@@ -24,6 +24,53 @@ class RegisterPatient(APIView):
 
         # Render the registration template with the patient details
         return render(request, 'registration.html', {'patient': patient})
+    
+class DashboardLogin(APIView):
+    def get(self,request):
+        return render(request,'hospital.html')
+    
+class DashboardView(APIView):
+    def get(self,request,hospital_id):
+        unreg=get_unregistered(hospital_id,connection)
+        reg=get_registered(hospital_id,connection)
+        context = {
+            'registered_patients': reg,
+            'unregistered_patients': unreg
+        }
+
+        return render(request,'dashboard.html',context)
+
+
+
+
+class DischargePatient(APIView):
+    def delete(self, request, patient_id):
+
+        try:
+            # Start a database transaction to ensure atomicity
+            with transaction.atomic():
+                # Find the patient by patient_id or return a 404 error if not found
+                patient = get_object_or_404(Patient, id=patient_id)
+
+                # Check if the patient already has an associated accident
+                accident = patient.accident
+                
+                if accident:
+                    # If there's an associated accident, delete the accident
+                    accident.delete()
+                
+                # Optionally mark the patient as discharged instead of deletion (if desired)
+                # We can either update a `discharged` field or just delete the patient record.
+                patient.delete()  # This will completely remove the patient record from the database
+
+                return Response({"message": "Patient discharged and associated accident deleted successfully."},
+                                status=status.HTTP_200_OK)
+
+        except Exception as e:
+            # Handle errors and return a failure response
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
 
 class getBestHospital(APIView):
     def post(self, request):

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+            height: 100vh;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 1000px;
+            margin: 20px auto;
+            overflow-y: auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+        }
+
+        .table-container {
+            margin-top: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: block;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #ff0000;
+            font-weight: bold;
+        }
+
+        .register-btn, .discharge-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+        }
+
+        .discharge-btn {
+            background-color: #f44336; /* Red for discharge button */
+        }
+
+        .discharge-btn:hover {
+            background-color: #d32f2f;
+        }
+
+        .register-btn:hover {
+            background-color: #45a049;
+        }
+
+        /* Ensure table responsiveness on small screens */
+        @media (max-width: 768px) {
+            table, th, td {
+                font-size: 12px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Hospital Dashboard</h1>
+        
+        <div class="table-container">
+            <h2>Registered Patients</h2>
+            {% if registered_patients %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Patient ID</th>
+                            <th>Accident ID</th>
+                            <th>Patient Name</th>
+                            <th>Gender</th>
+                            <th>Contact</th>
+                            <th>Action</th> <!-- Added Action column for buttons -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for patient in registered_patients %}
+                            <tr>
+                                <td>{{ patient.0 }}</td>
+                                <td>{{ patient.1 }}</td>
+                                <td>{{ patient.2 }}</td>
+                                <td>{{ patient.3 }}</td> <!-- Corrected gender field -->
+                                <td>{{ patient.4 }}</td>
+                                <td>
+                                    <!-- Discharge button, with data-patient-id attribute -->
+                                    <button class="discharge-btn" onclick="dischargePatient({{ patient.0 }})">Discharge</button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="no-data">No registered patients found.</p>
+            {% endif %}
+        </div>
+
+        <div class="table-container">
+            <h2>Unregistered Patients</h2>
+            {% if unregistered_patients %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Patient ID</th>
+                            <th>Accident ID</th>
+                            <th>Patient Name</th>
+                            <th>Gender</th>
+                            <th>Contact</th>
+                            <th>Action</th> <!-- Added Action column for buttons -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for patient in unregistered_patients %}
+                            <tr>
+                                <td>{{ patient.0 }}</td>
+                                <td>{{ patient.1 }}</td>
+                                <td>{{ patient.2 }}</td>
+                                <td>{{ patient.3 }}</td>
+                                <td>{{ patient.4 }}</td>
+                                <td><a href="{% url 'register_patient' patient.0 %}" class="register-btn">Register</a></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="no-data">No unregistered patients found.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // JavaScript to handle the discharge API request
+        function dischargePatient(patientId) {
+            const url = `/api/patients/${patientId}/discharge/`;
+
+            fetch(url, {
+                method: 'DELETE',  // Use DELETE method to discharge the patient
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Add CSRF token if necessary (for Django)
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message || "Patient discharged successfully");
+                // Optionally, reload the page or remove the row from the table
+                window.location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('There was an error discharging the patient.');
+            });
+        }
+
+        // Helper function to get CSRF token from cookies (if using Django with CSRF protection)
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+
+</body>
+</html>

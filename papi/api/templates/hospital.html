@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Dashboard Redirect</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            /*justify-content: center;
+            align-items: center;*/
+            height: 100vh;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 700px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+        }
+
+        .info {
+            margin: 15px 0;
+        }
+
+        .info strong {
+            font-weight: bold;
+        }
+
+        .input-container {
+            margin-top: 20px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+
+        .submit-button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+        .submit-button:hover {
+            background-color: #45a049;
+        }
+
+        .error-message {
+            color: red;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Dashboard Login</h1>
+
+        <div class="info">
+            <strong>Please enter the Hospital ID:</strong>
+        </div>
+
+        <div class="input-container">
+            <input type="text" id="hospital-id" placeholder="Enter Hospital ID">
+        </div>
+
+        <button class="submit-button" onclick="redirectToDashboard()">Go to Hospital Dashboard</button>
+
+        <div class="error-message" id="error-message"></div>
+    </div>
+
+    <script>
+        // Function to handle redirect based on the hospital ID
+        function redirectToDashboard() {
+            const hospitalId = document.getElementById('hospital-id').value.trim();
+
+            if (hospitalId === '') {
+                document.getElementById('error-message').textContent = 'Please enter a valid Hospital ID.';
+                return;
+            }
+
+            // Redirect to the hospital dashboard using the entered ID
+            window.location.href = `hospital/dashboard/${hospitalId}`;
+        }
+    </script>
+
+</body>
+</html>
