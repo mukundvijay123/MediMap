@@ -3,10 +3,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Accident, Patient,Hospital
-from .serializers import AccidentSerializer,PatientSerializer  
+from .serializers import AccidentSerializer,PatientSerializer,PatientSummarySerializer
 from django.db import connection
-from .apiUtils import predict_department, closestHospital ,get_registered,get_unregistered
+from .apiUtils import predict_department, closestHospital ,get_registered,get_unregistered,getHospitalName
 from django.shortcuts import render, get_object_or_404
+import logging
+from rest_framework.exceptions import NotFound
 
 
 
@@ -39,11 +41,86 @@ class DashboardView(APIView):
         }
 
         return render(request,'dashboard.html',context)
+    
+
+
+class PatientSummary(APIView):
+    def get(self, request, patient_id):
+        try:
+            # Fetch the patient by the given patient_id
+            patient = Patient.objects.get(id=patient_id)
+        except Patient.DoesNotExist:
+            # If patient does not exist, return a 404 error
+            raise NotFound(detail="Patient not found", code=status.HTTP_404_NOT_FOUND)
+
+        # Serialize the patient along with the associated accident data
+        serializer = PatientSummarySerializer(patient)
+        
+        # Return the serialized data in the response
+        return Response(serializer.data)
+    
+
+
+class DashboardDetails(APIView):
+    def get(self, request, hospital_id):
+        try:
+            # Get the hospital name and patient data
+            hospital_name = getHospitalName(hospital_id, connection)
+            unreg = get_unregistered(hospital_id, connection)
+            reg = get_registered(hospital_id, connection)
+
+            # Create the context
+            context = { 
+                'hospital_name': hospital_name,
+                'registered_patients': reg,
+                'unregistered_patients': unreg
+            }
+
+            # Return the response with status code 200 (OK)
+            return Response(context, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            # Log the error for debugging purposes
+            logging.error(f"Error fetching data for hospital_id {hospital_id}: {str(e)}")
+            
+            # Return an error response with a 500 status code (Internal Server Error)
+            return Response(
+                {"error": "Something went wrong while fetching hospital details."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 
+
+class PatientDetails(APIView):
+    def get(self, request, patient_id):
+        try:
+            # Fetch the patient by the provided ID
+            patient = Patient.objects.get(id=patient_id)
+            
+            # Serialize the patient data using the PatientSerializer
+            serializer = PatientSerializer(patient)
+            
+            # Return the serialized data in the response
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except Patient.DoesNotExist:
+            # Return error message if the patient doesn't exist
+            return Response({'error': 'Patient not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+
+
+class PatienSummary(APIView):
+    def get(self,patient_id):
+        patient = Patient.objects.get(id=patient_id)
+
+        return Response()
+    
 
 class DischargePatient(APIView):
+
+
+
     def delete(self, request, patient_id):
 
         try:

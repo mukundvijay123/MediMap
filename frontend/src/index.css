@@ -1,0 +1,136 @@
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 0;
+    background-image: url("https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeHZzMXQ2d3YwOHBzamEyYmN5OHFucHY2ZG1zZzN2bWNjd2dia3UyeCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3oKIPdGRt4YcjFx8be/giphy.gif");
+    background-size: cover;
+    background-repeat: no-repeat;
+    
+  }
+  
+  .container {
+    width: 80%;
+    margin: 20px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  h1, h2 {
+    text-align: center;
+    color: #333;
+  }
+  
+  /* Tables */
+  .table-container {
+    margin-top: 20px;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+  }
+  
+  th, td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: center;
+  }
+  
+  th {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  /* Buttons */
+  button {
+    padding: 8px 12px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  .discharge-btn {
+    background-color: #dc3545;
+    color: white;
+  }
+  
+  .update-btn {
+    background-color: #ffc107;
+    color: black;
+  }
+  
+  .view-btn, .register-btn {
+    background-color: #28a745;
+    color: white;
+  }
+  
+  button:hover {
+    opacity: 0.8;
+  }
+  
+  /* Forms */
+  .hospital-login, .register-form-container {
+    width: 50%;
+    margin: 50px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  .submit {
+    background-color: #007bff;
+    color: white;
+    width: 100%;
+    padding: 10px;
+  }
+  
+  .submit:hover {
+    opacity: 0.8;
+  }
+  
+  /* Patient Summary Modal */
+  .patient-summary-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .summary-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 50%;
+    text-align: center;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+  }
+  
+  .close-btn {
+    float: right;
+    font-size: 20px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+  

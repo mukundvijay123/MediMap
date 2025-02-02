@@ -140,3 +140,15 @@ def get_unregistered(hospital_id,connection):
     except:
         print("An error occured")
 
+
+def getHospitalName(hospital_id,connection):
+    cursor=connection.cursor()
+    GET_NAME_QUERY="""
+        SELECT h.hospital_name
+        FROM api_hospital AS h
+        WHERE h.id = %s
+    """
+
+    cursor.execute(GET_NAME_QUERY,(hospital_id,))
+    hospital_name=cursor.fetchall()
+    return hospital_name[0][0]

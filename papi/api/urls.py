@@ -8,4 +8,7 @@ urlpatterns=[
     path('dashboardLogin',views.DashboardLogin.as_view(),name='hosptal_dashboard_login'),
     path('hospital/dashboard/<int:hospital_id>/', views.DashboardView.as_view(), name='dashboard'),
     path('patients/<int:patient_id>/discharge/', views.DischargePatient.as_view(), name='discharge-patient'),
+    path("hospital/getDashboardInfo/<int:hospital_id>/",views.DashboardDetails.as_view(),name='hospital-info'),
+    path("patients/details/<int:patient_id>",views.PatientDetails.as_view(),name='patient-info'),
+    path("patients/summary/<int:patient_id>",views.PatientSummary.as_view(),name='patiet-summanry')
 ]

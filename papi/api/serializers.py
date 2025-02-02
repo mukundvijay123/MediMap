@@ -22,3 +22,13 @@ class PatientSerializer(serializers.ModelSerializer):
     blood_group = serializers.CharField(required=False, allow_blank=True, default=None)
     contact = serializers.CharField(required=False, allow_blank=True, default=None)
     insurance = serializers.PrimaryKeyRelatedField(queryset=Insurance.objects.all(), required=False, allow_null=True)
+
+
+
+class PatientSummarySerializer(serializers.ModelSerializer):
+    # Nested AccidentSerializer to get the associated accident details
+    accident = AccidentSerializer(read_only=True)  # This will serialize the related accident details
+    
+    class Meta:
+        model = Patient
+        fields = '__all__' 
