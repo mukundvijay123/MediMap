@@ -7,105 +7,119 @@ body {
     background-image: url("https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeHZzMXQ2d3YwOHBzamEyYmN5OHFucHY2ZG1zZzN2bWNjd2dia3UyeCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3oKIPdGRt4YcjFx8be/giphy.gif");
     background-size: cover;
     background-repeat: no-repeat;
-    
-  }
-  
-  .container {
+    background-position: center center; /* Ensure the gif is centered */
+    background-attachment: fixed; /* Make the background stay fixed when scrolling */
+    height: 100vh; /* Ensure the background fills the entire height of the viewport */
+}
+
+/* Container Styles */
+.container {
     width: 80%;
+    max-width: 800px;
     margin: 20px auto;
     background: white;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  h1, h2 {
+}
+
+/* Headings */
+h1, h2 {
     text-align: center;
     color: #333;
-  }
-  
-  /* Tables */
-  .table-container {
+}
+
+/* Tables */
+.table-container {
     margin-top: 20px;
-  }
-  
-  table {
+}
+
+table {
     width: 100%;
     border-collapse: collapse;
     background: white;
-  }
-  
-  th, td {
+}
+
+th, td {
     padding: 10px;
     border: 1px solid #ddd;
     text-align: center;
-  }
-  
-  th {
+}
+
+th {
     background-color: #007bff;
     color: white;
-  }
-  
-  /* Buttons */
-  button {
+}
+
+/* Buttons */
+button {
     padding: 8px 12px;
     margin: 5px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     font-weight: bold;
-  }
-  
-  .discharge-btn {
+}
+
+.discharge-btn {
     background-color: #dc3545;
     color: white;
-  }
-  
-  .update-btn {
+}
+
+.update-btn {
     background-color: #ffc107;
     color: black;
-  }
-  
-  .view-btn, .register-btn {
+}
+
+.view-btn, .register-btn {
     background-color: #28a745;
     color: white;
-  }
-  
-  button:hover {
+}
+
+button:hover {
     opacity: 0.8;
-  }
-  
-  /* Forms */
-  .hospital-login, .register-form-container {
+}
+
+/* Forms */
+.hospital-login, .register-form-container {
     width: 50%;
     margin: 50px auto;
     background: white;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  input, textarea {
+}
+
+input, textarea, select {
     width: 100%;
     padding: 10px;
     margin: 10px 0;
     border: 1px solid #ddd;
     border-radius: 5px;
-  }
-  
-  .submit {
+    font-size: 16px;  /* Ensuring consistent font size */
+}
+
+/* Ensuring dropdowns have the same height as inputs */
+select {
+    appearance: none; /* Hides default dropdown styles */
+    background-color: white;
+    cursor: pointer;
+}
+
+/* Submit Button */
+.submit {
     background-color: #007bff;
     color: white;
     width: 100%;
     padding: 10px;
-  }
-  
-  .submit:hover {
+}
+
+.submit:hover {
     opacity: 0.8;
-  }
-  
-  /* Patient Summary Modal */
-  .patient-summary-modal {
+}
+
+/* Patient Summary Modal */
+.patient-summary-modal {
     position: fixed;
     top: 0;
     left: 0;
@@ -115,22 +129,32 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-  }
-  
-  .summary-content {
+}
+
+.summary-content {
     background: white;
     padding: 20px;
     border-radius: 10px;
     width: 50%;
     text-align: center;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-  }
-  
-  .close-btn {
+}
+
+.close-btn {
     float: right;
     font-size: 20px;
     background: transparent;
     border: none;
     cursor: pointer;
-  }
-  
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container, .hospital-login, .register-form-container {
+        width: 90%;
+    }
+
+    .summary-content {
+        width: 80%;
+    }
+}
