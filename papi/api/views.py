@@ -9,6 +9,7 @@ from .apiUtils import predict_department, closestHospital ,get_registered,get_un
 from django.shortcuts import render, get_object_or_404
 import logging
 from rest_framework.exceptions import NotFound
+import json
 
 
 
@@ -254,7 +255,6 @@ class InsuranceView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class CompletePatientRegistrationView(APIView):
     def patch(self, request, pk, format=None):
         try:
@@ -262,9 +262,15 @@ class CompletePatientRegistrationView(APIView):
         except Patient.DoesNotExist:
             return Response({"detail": "Patient not found."}, status=status.HTTP_404_NOT_FOUND)
 
+        print("Request Body:", request.body.decode("utf-8"))  # Debugging request body
+
         # Deserialize and validate the data
         serializer = PatientSerializer(patient, data=request.data, partial=True)
         if serializer.is_valid():
+            # First, save validated serializer data to update other fields
+            serializer.save()
+
+            # Retrieve hospital and accident from session
             hospital_id = request.session.get("hospital_id")
             accident_id = request.session.get("accident_id")
 
@@ -284,13 +290,13 @@ class CompletePatientRegistrationView(APIView):
             insurance_data = request.data.get("insurance", None)
             if insurance_data:
                 if isinstance(insurance_data, int):  
-                    # If insurance is passed as an ID, assign existing insurance
+                    # Assign existing insurance by ID
                     try:
                         patient.insurance = Insurance.objects.get(id=insurance_data)
                     except Insurance.DoesNotExist:
                         return Response({"detail": "Insurance not found."}, status=status.HTTP_400_BAD_REQUEST)
                 elif isinstance(insurance_data, dict):
-                    # Create new insurance if details are provided
+                    # Create new insurance entry if details are provided
                     company_name = insurance_data.get("company_name")
                     cover = insurance_data.get("cover")
                     addr = insurance_data.get("addr", "")
@@ -307,8 +313,9 @@ class CompletePatientRegistrationView(APIView):
                     )
                     patient.insurance = insurance  # Assign the newly created insurance to the patient
 
-            # Save the updated patient instance
+            # Finally, save the updated patient instance
             patient.save()
+            
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
