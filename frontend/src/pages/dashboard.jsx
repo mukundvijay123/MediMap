@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 function Dashboard() {
-  const { hospitalId } = useParams();
+  const { hospitalID } = useParams();
   const navigate = useNavigate();
   const [hospitalData, setHospitalData] = useState({
     registered_patients: [],
@@ -16,7 +16,7 @@ function Dashboard() {
   useEffect(() => {
     const fetchHospitalData = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/hospital/getDashboardInfo/94/`);
+        const response = await fetch(`http://127.0.0.1:8000/api/hospital/getDashboardInfo/${hospitalID}/`);
         if (!response.ok) {
           throw new Error('Failed to fetch data');
         }
@@ -31,7 +31,7 @@ function Dashboard() {
     };
 
     fetchHospitalData();
-  }, []);
+  }, [hospitalID]);
 
   // View Patient Summary
   const viewPatientSummary = async (patientId) => {
@@ -41,6 +41,8 @@ function Dashboard() {
         throw new Error('Failed to fetch patient summary');
       }
       const patientData = await response.json();
+
+      console.log(patientData)
       setSelectedPatient(patientData);
       setSummaryVisible(true); // Show the summary pane
     } catch (error) {
@@ -207,29 +209,43 @@ function Dashboard() {
           <p className="no-data">No unregistered patients found.</p>
         )}
       </div>
-
-      {/* Patient Summary Modal */}
-      {isSummaryVisible && selectedPatient && (
-        <div className="patient-summary-modal">
-          <div className="summary-content">
-            <button className="close-btn" onClick={closeSummary}>
-              &times; {/* Close button */}
-            </button>
-            <h2>Patient Summary</h2>
-            <div>
-              <p><strong>Patient Name:</strong> {selectedPatient.patient_name}</p>
-              <p><strong>Gender:</strong> {selectedPatient.gender}</p>
-              <p><strong>Blood Group:</strong> {selectedPatient.blood_group}</p>
-              <p><strong>Contact:</strong> {selectedPatient.contact}</p>
-              <p><strong>Hospital ID:</strong> {selectedPatient.hospital}</p>
-              <p><strong>Accident Latitude:</strong> {selectedPatient.accident.accident_latitude}</p>
-              <p><strong>Accident Longitude:</strong> {selectedPatient.accident.accident_longitude}</p>
-              <p><strong>Accident Details:</strong> {selectedPatient.accident.accident_details.description}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
+{/* Patient Summary Modal */}
+{isSummaryVisible && selectedPatient && (
+  <div className="patient-summary-modal">
+    <div className="summary-content">
+      <button className="close-btn" onClick={closeSummary}>&times;</button>
+      <h2>Patient Summary</h2>
+      
+      <div>
+      <h3 style={{ textAlign: "left" }}>Patient Details</h3>
+        <p><strong>Patient Name:</strong> {selectedPatient.patient.patient_name || "Not Registered"}</p>
+        <p><strong>Gender:</strong> {selectedPatient.patient.gender || "Unknown"}</p>
+        <p><strong>Blood Group:</strong> {selectedPatient.patient.blood_group || "Unknown"}</p>
+        <p><strong>Contact:</strong> {selectedPatient.patient.contact || "Not Provided"}</p>
+        <p><strong>Hospital ID:</strong> {selectedPatient.patient.hospital}</p>
+        <br/>
+        <h3 style={{ textAlign: "left" }}>Accident Details</h3>
+        
+        <p><strong>Latitude:</strong> {selectedPatient.patient.accident.accident_latitude}</p>
+        <p><strong>Longitude:</strong> {selectedPatient.patient.accident.accident_longitude}</p>
+        <p><strong>Description:</strong> {selectedPatient.patient.accident.accident_details.description || "No details available"}</p>
+        <br/>
+        {selectedPatient.insurance ? (
+          <>
+            <h3 style={{ textAlign: "left" }}>Insurance Details</h3>
+            <p><strong>Company:</strong> {selectedPatient.insurance.company_name}</p>
+            <p><strong>Cover Amount:</strong> {selectedPatient.insurance.cover}</p>
+            <p><strong>Address:</strong> {selectedPatient.insurance.addr}</p>
+            <p><strong>Email:</strong> {selectedPatient.insurance.email}</p>
+            <p><strong>Website:</strong> <a href={selectedPatient.insurance.website_url} target="_blank" rel="noopener noreferrer">{selectedPatient.insurance.website_url}</a></p>
+          </>
+        ) : (
+          <h3>No Insurance Information Available</h3>
+        )}
+      </div>
+    </div>
+  </div>
+)}
       {/* Error handling */}
       {error && <p>{error}</p>}
     </div>

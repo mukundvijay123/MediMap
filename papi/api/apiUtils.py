@@ -118,6 +118,7 @@ def get_registered(hospital_id,connection):
             WHERE p.hospital_id=h.id  AND h.id = %s AND p.accident_id=a.id AND p.patient_name IS NOT NULL
         """
 
+
         cursor.execute(REGISTERED_QUERY,(hospital_id,))
         registered_patients=cursor.fetchall()
         return registered_patients
@@ -152,3 +153,4 @@ def getHospitalName(hospital_id,connection):
     cursor.execute(GET_NAME_QUERY,(hospital_id,))
     hospital_name=cursor.fetchall()
     return hospital_name[0][0]
+

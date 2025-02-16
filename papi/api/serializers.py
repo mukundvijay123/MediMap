@@ -32,3 +32,11 @@ class PatientSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = Patient
         fields = '__all__' 
+
+
+
+
+class InsuranceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Insurance
+        fields = ['id', 'company_name', 'cover', 'addr', 'email', 'website_url']

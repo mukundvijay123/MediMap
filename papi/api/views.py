@@ -2,8 +2,8 @@ from django.db import transaction
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Accident, Patient,Hospital
-from .serializers import AccidentSerializer,PatientSerializer,PatientSummarySerializer
+from .models import Accident, Patient,Hospital,Insurance
+from .serializers import AccidentSerializer,PatientSerializer,PatientSummarySerializer,InsuranceSerializer
 from django.db import connection
 from .apiUtils import predict_department, closestHospital ,get_registered,get_unregistered,getHospitalName
 from django.shortcuts import render, get_object_or_404
@@ -44,6 +44,9 @@ class DashboardView(APIView):
     
 
 
+
+
+
 class PatientSummary(APIView):
     def get(self, request, patient_id):
         try:
@@ -53,12 +56,20 @@ class PatientSummary(APIView):
             # If patient does not exist, return a 404 error
             raise NotFound(detail="Patient not found", code=status.HTTP_404_NOT_FOUND)
 
-        # Serialize the patient along with the associated accident data
-        serializer = PatientSummarySerializer(patient)
-        
-        # Return the serialized data in the response
-        return Response(serializer.data)
-    
+        # Serialize patient details
+        patient_serializer = PatientSummarySerializer(patient)
+
+        # If patient has insurance, serialize the insurance details
+        insurance_data = InsuranceSerializer(patient.insurance).data if patient.insurance else None
+
+        # Construct response
+        response_data = {
+            "patient": patient_serializer.data,
+            "insurance": insurance_data  # Will be None if no insurance exists
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
+
 
 
 class DashboardDetails(APIView):
@@ -205,6 +216,45 @@ class getBestHospital(APIView):
         
 
 
+class InsuranceView(APIView):
+
+    def get(self, request, pk=None):
+        """Fetch all insurances or a single insurance by ID"""
+        if pk:
+            try:
+                insurance = Insurance.objects.get(pk=pk)
+                serializer = InsuranceSerializer(insurance)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except Insurance.DoesNotExist:
+                return Response({"error": "Insurance not found"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            insurances = Insurance.objects.all()
+            serializer = InsuranceSerializer(insurances, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        """Create a new insurance record"""
+        serializer = InsuranceSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, pk):
+        """Update an existing insurance record"""
+        try:
+            insurance = Insurance.objects.get(pk=pk)
+        except Insurance.DoesNotExist:
+            return Response({"error": "Insurance not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = InsuranceSerializer(insurance, data=request.data, partial=True)  # Allow partial updates
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
 class CompletePatientRegistrationView(APIView):
     def patch(self, request, pk, format=None):
         try:
@@ -213,23 +263,52 @@ class CompletePatientRegistrationView(APIView):
             return Response({"detail": "Patient not found."}, status=status.HTTP_404_NOT_FOUND)
 
         # Deserialize and validate the data
-        serializer = PatientSerializer(patient, data=request.data, partial=True)  # partial=True allows updating only provided fields
+        serializer = PatientSerializer(patient, data=request.data, partial=True)
         if serializer.is_valid():
-            # Optionally assign hospital and accident from session or request context
-            hospital_id = request.session.get('hospital_id')  # Or some other way to fetch hospital
-            accident_id = request.session.get('accident_id')  # Or some other way to fetch accident
+            hospital_id = request.session.get("hospital_id")
+            accident_id = request.session.get("accident_id")
 
-            if hospital_id and accident_id:
+            if hospital_id:
                 try:
-                    hospital = Hospital.objects.get(id=hospital_id)
-                    accident = Accident.objects.get(id=accident_id)
-                    patient.hospital = hospital
-                    patient.accident = accident
-                except (Hospital.DoesNotExist, Accident.DoesNotExist):
-                    return Response({"detail": "Hospital or Accident not found."}, status=status.HTTP_400_BAD_REQUEST)
+                    patient.hospital = Hospital.objects.get(id=hospital_id)
+                except Hospital.DoesNotExist:
+                    return Response({"detail": "Hospital not found."}, status=status.HTTP_400_BAD_REQUEST)
+
+            if accident_id:
+                try:
+                    patient.accident = Accident.objects.get(id=accident_id)
+                except Accident.DoesNotExist:
+                    return Response({"detail": "Accident not found."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Handle insurance assignment
+            insurance_data = request.data.get("insurance", None)
+            if insurance_data:
+                if isinstance(insurance_data, int):  
+                    # If insurance is passed as an ID, assign existing insurance
+                    try:
+                        patient.insurance = Insurance.objects.get(id=insurance_data)
+                    except Insurance.DoesNotExist:
+                        return Response({"detail": "Insurance not found."}, status=status.HTTP_400_BAD_REQUEST)
+                elif isinstance(insurance_data, dict):
+                    # Create new insurance if details are provided
+                    company_name = insurance_data.get("company_name")
+                    cover = insurance_data.get("cover")
+                    addr = insurance_data.get("addr", "")
+                    email = insurance_data.get("email", "")
+                    website_url = insurance_data.get("website_url", "")
+
+                    if not company_name or cover is None:
+                        return Response({"detail": "Insurance company name and cover are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+                    insurance, created = Insurance.objects.get_or_create(
+                        company_name=company_name,
+                        cover=cover,
+                        defaults={"addr": addr, "email": email, "website_url": website_url}
+                    )
+                    patient.insurance = insurance  # Assign the newly created insurance to the patient
 
             # Save the updated patient instance
-            serializer.save()
+            patient.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
