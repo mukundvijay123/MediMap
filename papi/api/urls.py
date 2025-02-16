@@ -10,5 +10,7 @@ urlpatterns=[
     path('patients/<int:patient_id>/discharge/', views.DischargePatient.as_view(), name='discharge-patient'),
     path("hospital/getDashboardInfo/<int:hospital_id>/",views.DashboardDetails.as_view(),name='hospital-info'),
     path("patients/details/<int:patient_id>",views.PatientDetails.as_view(),name='patient-info'),
-    path("patients/summary/<int:patient_id>",views.PatientSummary.as_view(),name='patiet-summanry')
+    path("patients/summary/<int:patient_id>",views.PatientSummary.as_view(),name='patiet-summanry'),
+    path('insurance/', views.InsuranceView.as_view(),name='insurance'),          
+    path('insurance/<int:pk>/', views.InsuranceView.as_view(),name='update_insurances'),
 ]

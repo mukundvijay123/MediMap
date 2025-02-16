@@ -15,6 +15,7 @@ function HospitalLogin(){
     }
 
     useEffect(()=>{
+        console.log(hospitalID)
         if(hospitalID===''){
             setErrors(('Hospital ID s required'))
         }else if(!isNumeric(hospitalID)){
