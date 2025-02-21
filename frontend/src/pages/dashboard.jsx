@@ -169,10 +169,7 @@ function Dashboard() {
             <thead>
               <tr>
                 <th>Patient ID</th>
-                <th>Accident ID</th>
-                <th>Patient Name</th>
-                <th>Gender</th>
-                <th>Contact</th>
+                <th>Accident ID</th>         
                 <th>Action</th>
                 <th>View</th>
               </tr>
@@ -182,9 +179,6 @@ function Dashboard() {
                 <tr key={patient[0]}>
                   <td>{patient[0]}</td>
                   <td>{patient[1]}</td>
-                  <td>{patient[2]}</td>
-                  <td>{patient[3]}</td>
-                  <td>{patient[4]}</td>
                   <td>
                     <button
                       className="register-btn"
